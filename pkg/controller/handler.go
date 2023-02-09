@@ -34,7 +34,7 @@ func (m *Manager) LookupDomain(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ips, err := lookupIPv4Addr(domain)
+	ips, err := m.networkInfra.LookupIPv4Addr(domain)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(models.HTTPError{Message: "No domain provided"})
@@ -46,6 +46,8 @@ func (m *Manager) LookupDomain(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(models.HTTPError{Message: fmt.Sprintf("No IPv4 are associated with %s", domain)})
 		return
 	}
+
+	// DONT FORGET TO ADD IT TO THE DATABASE!
 
 	domainLookup := retrieveDomainLookup(ips, domain)
 	json.NewEncoder(w).Encode(domainLookup)

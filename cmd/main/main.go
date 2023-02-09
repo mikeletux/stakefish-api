@@ -2,16 +2,17 @@ package main
 
 import (
 	"github.com/mikeletux/stakefish-api/pkg/controller"
-	"github.com/mikeletux/stakefish-api/pkg/database"
+	"github.com/mikeletux/stakefish-api/pkg/infra"
 	"log"
 	"net/http"
 	"time"
 )
 
 func main() {
-	dbController := database.NewPostgresConnector()
+	dbController := infra.NewPostgresConnector()
+	networkInfra := infra.ImpInfra{}
 
-	r := controller.NewController(dbController)
+	r := controller.NewController(dbController, networkInfra)
 
 	srv := &http.Server{
 		Handler: r.Router,
