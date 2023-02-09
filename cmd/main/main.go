@@ -2,21 +2,20 @@ package main
 
 import (
 	"github.com/mikeletux/stakefish-api/pkg/controller"
+	"github.com/mikeletux/stakefish-api/pkg/database"
 	"log"
 	"net/http"
 	"time"
 )
 
-func YourHandler(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Gorilla!\n"))
-}
-
 func main() {
-	r := controller.NewController()
+	dbController := database.NewPostgresConnector()
+
+	r := controller.NewController(dbController)
 
 	srv := &http.Server{
-		Handler: r,
-		Addr:    "127.0.0.1:8000",
+		Handler: r.Router,
+		Addr:    "127.0.0.1:3000",
 		// Good practice: enforce timeouts for servers you create!
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
