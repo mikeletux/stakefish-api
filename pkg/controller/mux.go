@@ -13,14 +13,18 @@ type Manager struct {
 }
 
 func NewController(dbConnector database.Connector) *Manager {
+	manager := &Manager{dbConnector: dbConnector}
+
 	router := mux.NewRouter()
 
-	router.HandleFunc("/", GetUnixTime).Methods("GET")
+	router.HandleFunc("/", manager.GetUnixTime).Methods("GET")
 	//	router.HandleFunc("/metrics", TBDfunc).Methods("GET")
 	//	router.HandleFunc("/health", TBDfunc).Methods("POST")
-	// router.HandleFunc("/v1/tools/lookup", LookupDomain).Methods("GET")
-	router.HandleFunc("/v1/tools/validate", ValidateIP).Methods("POST")
+	router.HandleFunc("/v1/tools/lookup", manager.LookupDomain).Methods("GET")
+	router.HandleFunc("/v1/tools/validate", manager.ValidateIP).Methods("POST")
 	// router.HandleFunc("/v1/history", RetrieveHistory).Methods("GET")
 
-	return &Manager{Router: router, dbConnector: dbConnector}
+	manager.Router = router
+
+	return manager
 }
