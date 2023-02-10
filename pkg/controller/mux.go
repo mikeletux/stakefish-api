@@ -2,6 +2,7 @@ package controller
 
 import (
 	"github.com/gorilla/mux"
+	"github.com/mikeletux/stakefish-api/pkg/debug"
 	"github.com/mikeletux/stakefish-api/pkg/infra"
 	"net/http"
 )
@@ -10,15 +11,16 @@ import (
 type Manager struct {
 	Router http.Handler
 
-	dbConnector infra.DBConnector
-
+	dbConnector  infra.DBConnector
 	networkInfra infra.AccessInfra
+	log          debug.Logger
 }
 
-func NewController(dbConnector infra.DBConnector, networkInfra infra.AccessInfra) *Manager {
+func NewController(dbConnector infra.DBConnector, networkInfra infra.AccessInfra, log debug.Logger) *Manager {
 	manager := &Manager{
 		dbConnector:  dbConnector,
 		networkInfra: networkInfra,
+		log:          log,
 	}
 
 	router := mux.NewRouter()
