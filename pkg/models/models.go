@@ -7,14 +7,17 @@ type UnixTime struct {
 }
 
 type Address struct { // Address and ValidateIPRequest can be shared as both are the same in terms of data.
+	Id int64  `json:"-" pg:",default,pk"`
 	Ip string `json:"ip"`
 }
 
 type Query struct {
-	Addresses []Address `json:"addresses"`
-	ClientIp  string    `json:"client_ip"`
-	CreatedAt int64     `json:"created_at"`
-	Domain    string    `json:"domain"`
+	tableName struct{} `json:"-" pg:"query"`
+	Id        int64    `json:"-" pg:"id,default,pk"`
+	// Addresses []Address `json:"addresses" pg:"rel:has-many"`
+	ClientIp  string `json:"client_ip" pg:"client_ip"`
+	CreatedAt int64  `json:"created_at" pg:"created_at"`
+	Domain    string `json:"domain" pg:"domain"`
 }
 
 type ValidateIPResponse struct {
