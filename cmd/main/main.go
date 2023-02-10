@@ -9,15 +9,14 @@ import (
 )
 
 func main() {
-	dbController := infra.NewPostgresConnector()
+	dbController := infra.NewPostgresConnector(":5432", "postgres", "postgres", "stakefish")
 	networkInfra := infra.ImpInfra{}
 
 	r := controller.NewController(dbController, networkInfra)
 
 	srv := &http.Server{
-		Handler: r.Router,
-		Addr:    "127.0.0.1:3000",
-		// Good practice: enforce timeouts for servers you create!
+		Handler:      r.Router,
+		Addr:         "127.0.0.1:3000",
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
 	}
