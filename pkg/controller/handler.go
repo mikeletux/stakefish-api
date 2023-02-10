@@ -47,9 +47,9 @@ func (m *Manager) LookupDomain(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// DONT FORGET TO ADD IT TO THE DATABASE!
-
 	domainLookup := retrieveDomainLookup(ips, domain)
+	m.dbConnector.SaveQuery(domainLookup)
+	
 	json.NewEncoder(w).Encode(domainLookup)
 }
 
