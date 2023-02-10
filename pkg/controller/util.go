@@ -15,7 +15,7 @@ func checkIfStringIsIP(ip string) bool {
 
 func retrieveDomainLookup(addresses []models.Address, domain string) models.Query {
 	return models.Query{
-		Addresses: addresses,
+		// Addresses: addresses,
 		ClientIp:  "192.168.1.2", // Change this :)
 		CreatedAt: time.Now().Unix(),
 		Domain:    domain,
