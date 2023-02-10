@@ -52,7 +52,9 @@ func (p *PostgresConnector) SaveQuery(query models.Query) error {
 
 func (p *PostgresConnector) RetrieveLastTwentyQueries() ([]models.Query, error) {
 	var queries []models.Query
-	err := p.db.Model(&queries).Order("CreatedAt DESC").Limit(20).Select()
+	err := p.db.Model(&queries).
+		Relation("Addresses").
+		Select()
 	if err != nil {
 		return nil, err
 	}
