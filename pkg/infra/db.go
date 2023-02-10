@@ -38,6 +38,15 @@ func (p *PostgresConnector) SaveQuery(query models.Query) error {
 	if err != nil {
 		return err
 	}
+
+	for _, ip := range query.Addresses {
+		ip.QueryID = query.Id
+		_, err := p.db.Model(&ip).Insert()
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
