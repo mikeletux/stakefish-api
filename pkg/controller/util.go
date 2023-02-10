@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/mikeletux/stakefish-api/pkg/models"
 	"net/url"
+	"os"
 	"regexp"
 	"time"
 )
@@ -31,4 +32,13 @@ func getIpFromAddressPort(addressPort string) string {
 	}
 
 	return u.Hostname()
+}
+
+func isRunningInK8s() bool {
+	k8sServiceHost := os.Getenv("KUBERNETES_SERVICE_HOST")
+	if len(k8sServiceHost) > 0 {
+		return true
+	}
+
+	return false
 }

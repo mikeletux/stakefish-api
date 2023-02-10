@@ -19,7 +19,7 @@ func (m *Manager) GetUnixTime(w http.ResponseWriter, r *http.Request) {
 
 	unixTime.Version = "0.1.0"
 	unixTime.TimeStamp = time.Now().Unix()
-	unixTime.Isk8s = false
+	unixTime.Isk8s = isRunningInK8s()
 
 	json.NewEncoder(w).Encode(unixTime)
 }
