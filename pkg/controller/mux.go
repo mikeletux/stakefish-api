@@ -6,6 +6,7 @@ import (
 	"net/http"
 )
 
+// Manager handles the mux router creation and handles dependencies to access the internet and the storage backend.
 type Manager struct {
 	Router http.Handler
 
