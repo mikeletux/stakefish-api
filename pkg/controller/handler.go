@@ -36,8 +36,8 @@ func (m *Manager) LookupDomain(w http.ResponseWriter, r *http.Request) {
 
 	ips, err := m.networkInfra.LookupIPv4Addr(domain)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(models.HTTPError{Message: "No domain provided"})
+		w.WriteHeader(http.StatusNotFound)
+		json.NewEncoder(w).Encode(models.HTTPError{Message: fmt.Sprintf("Domain %s was not found", domain)})
 		return
 	}
 
