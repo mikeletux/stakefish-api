@@ -1,7 +1,9 @@
 package controller
 
 import (
+	"fmt"
 	"github.com/mikeletux/stakefish-api/pkg/models"
+	"net/url"
 	"regexp"
 	"time"
 )
@@ -13,11 +15,20 @@ func checkIfStringIsIP(ip string) bool {
 	return regexp.MatchString(ip)
 }
 
-func retrieveDomainLookup(addresses []models.Address, domain string) models.Query {
+func retrieveDomainLookup(addresses []models.Address, domain string, clientIP string) models.Query {
 	return models.Query{
 		Addresses: addresses,
-		ClientIp:  "192.168.1.2", // Change this :)
+		ClientIp:  clientIP,
 		CreatedAt: time.Now().Unix(),
 		Domain:    domain,
 	}
+}
+
+func getIpFromAddressPort(addressPort string) string {
+	u, err := url.Parse(fmt.Sprintf("http://%s", addressPort))
+	if err != nil {
+		return addressPort
+	}
+
+	return u.Hostname()
 }

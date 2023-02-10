@@ -47,7 +47,7 @@ func (m *Manager) LookupDomain(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	domainLookup := retrieveDomainLookup(ips, domain)
+	domainLookup := retrieveDomainLookup(ips, domain, getIpFromAddressPort(r.RemoteAddr))
 
 	err = m.dbConnector.SaveQuery(domainLookup)
 	if err != nil {

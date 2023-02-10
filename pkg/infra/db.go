@@ -54,6 +54,8 @@ func (p *PostgresConnector) RetrieveLastTwentyQueries() ([]models.Query, error) 
 	var queries []models.Query
 	err := p.db.Model(&queries).
 		Relation("Addresses").
+		Order("created_at DESC").
+		Limit(20).
 		Select()
 	if err != nil {
 		return nil, err
