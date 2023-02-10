@@ -5,12 +5,15 @@ import (
 	"net"
 )
 
+// AccessInfra is the interface that must be implemented to access the internet.
 type AccessInfra interface {
 	LookupIPv4Addr(domain string) ([]models.Address, error)
 }
 
+// ImpInfra implements AccessInfra interface and gives access to the actual internet.
 type ImpInfra struct{}
 
+// LookupIPv4Addr retrieves all IPv4 address from a domain name accessing the actual internet.
 func (i ImpInfra) LookupIPv4Addr(domain string) ([]models.Address, error) {
 	var ipv4 []models.Address
 	ips, err := net.LookupIP(domain)
