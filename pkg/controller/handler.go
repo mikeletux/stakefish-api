@@ -48,8 +48,14 @@ func (m *Manager) LookupDomain(w http.ResponseWriter, r *http.Request) {
 	}
 
 	domainLookup := retrieveDomainLookup(ips, domain)
-	m.dbConnector.SaveQuery(domainLookup)
-	
+
+	err = m.dbConnector.SaveQuery(domainLookup)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(models.HTTPError{Message: err.Error()})
+		return
+	}
+
 	json.NewEncoder(w).Encode(domainLookup)
 }
 
@@ -69,5 +75,14 @@ func (m *Manager) ValidateIP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (m *Manager) RetrieveHistory(w http.ResponseWriter, r *http.Request) {
-	// TO-DO
+	w.Header().Set("Content-Type", "application/json")
+
+	queries, err := m.dbConnector.RetrieveLastTwentyQueries()
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(models.HTTPError{Message: err.Error()})
+		return
+	}
+
+	json.NewEncoder(w).Encode(queries)
 }
