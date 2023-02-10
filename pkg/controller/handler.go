@@ -24,6 +24,10 @@ func (m *Manager) GetUnixTime(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(unixTime)
 }
 
+// LookupDomain handles queries coming to "/v1/tools/lookup" endpoint.
+// If domain is provided and exists, returns a models.Query struct with the IPs associated with the domain,
+// the client ip who made the request, the unix timestamp when the query was made and the domain name queried.
+// It also saves the query in the storage specified in Manager.dbConnector.
 func (m *Manager) LookupDomain(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
@@ -59,6 +63,9 @@ func (m *Manager) LookupDomain(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(domainLookup)
 }
 
+// ValidateIP handles queries coming to "/v1/tools/validate" endpoint.
+// This handler checks if the IP address provided as a parameter is an actual IPv4.
+// If it is an IPv4 it returns true, false otherwise.
 func (m *Manager) ValidateIP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
@@ -74,6 +81,8 @@ func (m *Manager) ValidateIP(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(models.ValidateIPResponse{Status: result})
 }
 
+// RetrieveHistory handles queries coming to "/v1/history" endpoint.
+// It returns the last 20 queries that were done in a descendent manner (last query done is the first one displayed).
 func (m *Manager) RetrieveHistory(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
