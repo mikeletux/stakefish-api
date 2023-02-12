@@ -1,0 +1,37 @@
+version: '3.8'
+services:
+  stakefish-db:
+    image: postgres:14.1-alpine
+    restart: always
+    container_name: stakefish-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - '5432:5432'
+    volumes: 
+      - db:/var/lib/postgresql/data
+      - ./db/create_tables.sql:/docker-entrypoint-initdb.d/create_tables.sql
+  stakefish-api:
+    container_name: stakefish-api
+    build:
+      context: .
+      args:
+        - stakefish_api_version=testing
+    image: stakefish-api:testing
+    depends_on:
+      - stakefish-db
+    ports:
+      - 3000:3000
+    environment:
+      FISH_PG_HOST: stakefish-db:5432
+      FISH_PG_USER: postgres
+      FISH_PG_PASS: postgres
+      FISH_PG_DATABASE: postgres
+      FISH_PG_API_ADDR: 0.0.0.0:3000
+    links:
+      - stakefish-db
+
+volumes:
+  db:
+    driver: local
