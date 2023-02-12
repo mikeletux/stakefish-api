@@ -1,0 +1,41 @@
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: stakefish-api:0.1.0
+  pullPolicy: Never
+
+application:
+  name: stakefish-api
+
+containerPort: 3000
+loadBalancerPort: 3000
+      
+postgresql:
+  global:
+    postgresql:
+      auth:
+        postgresPassword: "postgres"
+        database: "postgres"
+      service:
+        ports:
+          postgresql: "5432"
+  primary:
+    initdb:
+      scripts:
+        init.sql: |
+          CREATE TABLE IF NOT EXISTS query (
+            id SERIAL PRIMARY KEY,
+            client_ip VARCHAR ( 50 ) NOT NULL,
+            created_at BIGINT NOT NULL,
+            domain VARCHAR ( 50 ) NOT NULL
+            );
+          CREATE TABLE IF NOT EXISTS address (
+            id SERIAL PRIMARY KEY,
+            query_id INTEGER,
+            ip VARCHAR ( 50 ) NOT NULL,
+            FOREIGN KEY (query_id)
+            REFERENCES query (id)
+            );
