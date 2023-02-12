@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/mikeletux/stakefish-api/pkg/models"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 )
@@ -17,7 +18,7 @@ func (m *Manager) GetUnixTime(w http.ResponseWriter, r *http.Request) {
 
 	var unixTime models.UnixTime
 
-	unixTime.Version = "0.1.0"
+	unixTime.Version = os.Getenv("STAKEFISH_API_VERSION")
 	unixTime.TimeStamp = time.Now().Unix()
 	unixTime.Isk8s = isRunningInK8s()
 
