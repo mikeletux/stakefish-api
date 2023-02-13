@@ -85,4 +85,4 @@ jobs:
         owner: mikeletux
         repository: helm-chart
         branch: gh-pages
-        target_dir: helm
+        target_dir: helm/stakefish-chart
