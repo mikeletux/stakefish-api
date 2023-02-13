@@ -27,7 +27,7 @@ func NewController(dbConnector infra.DBConnector, networkInfra infra.AccessInfra
 
 	router.HandleFunc("/", manager.GetUnixTime).Methods("GET")
 	//	router.HandleFunc("/metrics", TBDfunc).Methods("GET")
-	//	router.HandleFunc("/health", TBDfunc).Methods("POST")
+	router.HandleFunc("/health", manager.HealthCheck).Methods("GET")
 	router.HandleFunc("/v1/tools/lookup", manager.LookupDomain).Methods("GET")
 	router.HandleFunc("/v1/tools/validate", manager.ValidateIP).Methods("POST")
 	router.HandleFunc("/v1/history", manager.RetrieveHistory).Methods("GET")

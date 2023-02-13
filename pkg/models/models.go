@@ -26,6 +26,10 @@ type ValidateIPResponse struct {
 	Status bool `json:"status"`
 }
 
+type HealthResponse struct {
+	Healthy bool `json:"healthy"`
+}
+
 type HTTPError struct {
 	Message string `json:"message"`
 }

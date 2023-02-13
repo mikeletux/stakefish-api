@@ -104,3 +104,20 @@ func (m *Manager) RetrieveHistory(w http.ResponseWriter, r *http.Request) {
 
 	json.NewEncoder(w).Encode(queries)
 }
+
+// HealthCheck handles queries coming to "/health" endpoint.
+// It performs a connection test against the database backend. If it works returns true. Returns false otherwise.
+func (m *Manager) HealthCheck(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	m.log.Debugf("%s %s from %s", r.Method, r.RequestURI, getIpFromAddressPort(r.Host))
+
+	var isDbHealthy bool
+	err := m.dbConnector.Ping()
+	if err == nil {
+		isDbHealthy = true
+	}
+
+	json.NewEncoder(w).Encode(models.HealthResponse{Healthy: isDbHealthy})
+
+}
