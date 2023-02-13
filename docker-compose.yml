@@ -22,7 +22,7 @@ services:
     depends_on:
       - stakefish-db
     ports:
-      - 3000:3000
+      - '3000:3000'
     environment:
       FISH_PG_HOST: stakefish-db:5432
       FISH_PG_USER: postgres
