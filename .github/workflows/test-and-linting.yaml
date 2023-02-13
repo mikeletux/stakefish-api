@@ -67,4 +67,4 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args:
-            - stakefish_api_version: ${{ GITHUB_SHA }}
+            stakefish_api_version: ${{ GITHUB_SHA }}
