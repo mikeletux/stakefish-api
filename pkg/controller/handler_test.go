@@ -17,7 +17,7 @@ func TestGetUnixTime(t *testing.T) {
 	db := infra.NewMockConnector()
 	mockInfra := infra.MockInfra{}
 
-	manager := NewController(db, mockInfra)
+	manager := NewController(db, mockInfra, nil)
 
 	r, _ := http.NewRequest("GET", "/", nil)
 	w := httptest.NewRecorder()
@@ -74,7 +74,7 @@ func TestValidateIP(t *testing.T) {
 	db := infra.NewMockConnector()
 	mockInfra := infra.MockInfra{}
 
-	manager := NewController(db, mockInfra)
+	manager := NewController(db, mockInfra, nil)
 
 	for _, test := range testTable {
 		requestBody, err := json.Marshal(models.Address{Ip: test.ipAddr})
