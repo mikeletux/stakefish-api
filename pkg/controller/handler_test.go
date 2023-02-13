@@ -3,6 +3,7 @@ package controller
 import (
 	"bytes"
 	"encoding/json"
+	"github.com/mikeletux/stakefish-api/pkg/debug"
 	"github.com/mikeletux/stakefish-api/pkg/infra"
 	"github.com/mikeletux/stakefish-api/pkg/models"
 	"net/http"
@@ -17,7 +18,7 @@ func TestGetUnixTime(t *testing.T) {
 	db := infra.NewMockConnector()
 	mockInfra := infra.MockInfra{}
 
-	manager := NewController(db, mockInfra, nil)
+	manager := NewController(db, mockInfra, debug.NewBuiltinStdoutLogger())
 
 	r, _ := http.NewRequest("GET", "/", nil)
 	w := httptest.NewRecorder()
@@ -74,7 +75,7 @@ func TestValidateIP(t *testing.T) {
 	db := infra.NewMockConnector()
 	mockInfra := infra.MockInfra{}
 
-	manager := NewController(db, mockInfra, nil)
+	manager := NewController(db, mockInfra, debug.NewBuiltinStdoutLogger())
 
 	for _, test := range testTable {
 		requestBody, err := json.Marshal(models.Address{Ip: test.ipAddr})

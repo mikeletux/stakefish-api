@@ -16,6 +16,8 @@ import (
 func (m *Manager) GetUnixTime(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
+	m.log.Debugf("%s %s from %s", r.Method, r.RequestURI, getIpFromAddressPort(r.Host))
+
 	var unixTime models.UnixTime
 
 	unixTime.Version = os.Getenv("STAKEFISH_API_VERSION")
@@ -31,6 +33,8 @@ func (m *Manager) GetUnixTime(w http.ResponseWriter, r *http.Request) {
 // It also saves the query in the storage specified in Manager.dbConnector.
 func (m *Manager) LookupDomain(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+
+	m.log.Debugf("%s %s from %s", r.Method, r.RequestURI, getIpFromAddressPort(r.Host))
 
 	domain := r.URL.Query().Get("domain")
 	if len(strings.TrimSpace(domain)) == 0 { // If no domain is provided, inform client.
@@ -70,6 +74,8 @@ func (m *Manager) LookupDomain(w http.ResponseWriter, r *http.Request) {
 func (m *Manager) ValidateIP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
+	m.log.Debugf("%s %s from %s", r.Method, r.RequestURI, getIpFromAddressPort(r.Host))
+
 	var ipAddr models.Address
 	err := json.NewDecoder(r.Body).Decode(&ipAddr)
 	if err != nil {
@@ -86,6 +92,8 @@ func (m *Manager) ValidateIP(w http.ResponseWriter, r *http.Request) {
 // It returns the last 20 queries that were done in a descendent manner (last query done is the first one displayed).
 func (m *Manager) RetrieveHistory(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+
+	m.log.Debugf("%s %s from %s", r.Method, r.RequestURI, getIpFromAddressPort(r.Host))
 
 	queries, err := m.dbConnector.RetrieveLastTwentyQueries()
 	if err != nil {
