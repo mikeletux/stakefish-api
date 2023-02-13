@@ -78,6 +78,9 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
+    - uses: benjlevesque/short-sha@v2.1
+        id: short-sha
+    
     - name: Publish Helm charts
       uses: stefanprodan/helm-gh-pages@v1.7.0
       with:
@@ -87,3 +90,4 @@ jobs:
         owner: mikeletux
         repository: helm-chart
         branch: gh_pages
+        app_version: sha-${{ steps.short-sha.outputs.sha }}
