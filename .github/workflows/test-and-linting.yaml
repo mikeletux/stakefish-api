@@ -79,10 +79,11 @@ jobs:
     - uses: actions/checkout@v3
 
     - name: Publish Helm charts
-      uses: stefanprodan/helm-gh-pages@master
+      uses: stefanprodan/helm-gh-pages@v1.7.0
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
+        charts_dir: helm
+        charts_url: https://mikeletux.github.io/helm-chart
         owner: mikeletux
         repository: helm-chart
-        branch: gh-pages
-        target_dir: helm/stakefish-chart
+        branch: gh_pages
