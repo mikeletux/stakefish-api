@@ -19,3 +19,9 @@ jobs:
 
       - name: Test
         run: make test
+
+      - name: Test Build Docker image
+        uses: docker/build-push-action@v4.0.0
+        with:
+          context: .
+          push: false
