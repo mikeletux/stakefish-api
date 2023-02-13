@@ -1,13 +1,18 @@
 package main
 
 import (
+	"context"
 	"github.com/mikeletux/stakefish-api/pkg/controller"
 	"github.com/mikeletux/stakefish-api/pkg/debug"
 	"github.com/mikeletux/stakefish-api/pkg/infra"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 )
+
+const gracefulShutdownTime int = 15
 
 func main() {
 	log := debug.NewBuiltinStdoutLogger()
@@ -26,8 +31,29 @@ func main() {
 		ReadTimeout:  15 * time.Second,
 	}
 
-	// Bind to a port and pass our router in
-	log.Fatal(srv.ListenAndServe())
+	go func() {
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatal(err)
+		}
+	}()
+
+	log.Debug("Server started")
+
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+	<-sigs
+
+	log.Debug("Stopping server...")
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+
+	if err := srv.Shutdown(ctx); err != nil && err != http.ErrServerClosed {
+		log.Fatal(err)
+	}
+	log.Debug("HTTP Server stopped")
+
+	dbController.Close() // Shutting down gracefully the database connector.
+	log.Debug("Database Connector closed")
 }
 
 func getEnvVars(log debug.Logger) config {
