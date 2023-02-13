@@ -4,11 +4,11 @@
 replicaCount: 1
 
 image:
-  repository: stakefish-api:0.1.0
-  pullPolicy: Never
+  repository: "ghcr.io/mikeletux/stakefish-api"
+  pullPolicy: "IfNotPresent"
 
 application:
-  name: stakefish-api
+  name: "stakefish-api"
 
 containerPort: 3000
 loadBalancerPort: 3000
