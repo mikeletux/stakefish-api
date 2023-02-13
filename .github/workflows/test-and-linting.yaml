@@ -67,4 +67,18 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: stakefish_api_version=${{ github.sha }}
-            
+  
+  package-helm-chart:
+    needs: build-push-docker
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+      steps:
+      - uses: actions/checkout@v3
+      - name: Publish Helm charts
+        uses: mikeletux/helm-chart@main
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          charts_dir: helm
