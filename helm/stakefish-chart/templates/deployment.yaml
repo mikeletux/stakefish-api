@@ -24,7 +24,22 @@ spec:
         resources: {}
         ports:
           - containerPort: {{ .Values.containerPort }}
-        envFrom:
-            - secretRef:
-                name: stakefish-api-secret
+        env:
+        - name: FISH_PG_HOST
+          value: "{{ .Release.Name}}-postgresql:{{ .Values.postgresql.global.postgresql.service.ports.postgresql }}"
+        - name: FISH_PG_API_ADDR
+          value: "0.0.0.0:{{ .Values.loadBalancerPort }}"
+        - name: FISH_PG_DATABASE
+          value: {{ .Values.postgresql.global.postgresql.auth.database }}
+        - name: FISH_PG_USER
+          valueFrom:
+            secretKeyRef:
+              name: stakefish-api-secret
+              key: fish-pg-user
+        - name: FISH_PG_PASS
+          valueFrom:
+            secretKeyRef:
+              name: stakefish-api-secret
+              key: postgres-password
+        
 status: {}

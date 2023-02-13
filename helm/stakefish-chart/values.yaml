@@ -14,10 +14,11 @@ containerPort: 3000
 loadBalancerPort: 3000
       
 postgresql:
+  auth:
+    existingSecret: stakefish-api-secret
   global:
     postgresql:
       auth:
-        postgresPassword: "postgres"
         database: "postgres"
       service:
         ports:
