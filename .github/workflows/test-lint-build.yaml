@@ -91,3 +91,4 @@ jobs:
         repository: helm-chart
         branch: gh_pages
         app_version: sha-${{ steps.short-sha.outputs.sha }}
+      if: github.event_name != 'pull_request'
