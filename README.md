@@ -1,61 +1,89 @@
-# Interview challenge
+# Solution proposed to Stakefish challenge
+The original exercise description is [HERE](EXERCISE.md)
 
-## Coding Challenge
+## 1. Overview
+This document aims to give an understanding about how the exercise has been solved. It also tries to enfatice what's been and what has not been done and what would need to be improved.  
+As an overview, the following technologies have been used to build this project from the ground up:
+  - `Go` as programming language for building the Rest API.
+  - `Postgresql` as the storage backend for the Rest API.
+  - `Docker` for application ontainerization.
+  - `Docker compose` for setting up a quick dev environment.
+  - `Minikube` for local `k8s` development.
+  - `Helm` for `k8s` application packaging.
+  - `GitHub Actions` for the CI pipeline.
 
-Please create a REST API based on the attached OpenAPI/Swagger definition in your preferred language (Node.JS, TypeScript, Go, Python, Ruby, Perl, Crystal, Nim, etc.). In addition to the endpoints included in the Swagger definition, please ensure that a Prometheus metrics endpoint is available in your application under `/metrics`. The application should also provide a `/health` endpoint.
+## 2. Rest API
+The rest API has been developed using Go as programming language, which is very conveniente for these kind of backends. Apart from the standard library, the following third party libraries have been used:
+  - `gorilla/mux`: simple HTTP request router and dispatcher.
+  - `go-pg`: Go ORM for Postgres database backends.
 
-The `/` (root) endpoint should provide the current date (UNIX epoch) and version. Additionally, a boolean property called Kubernetes should indicate if the application is running under Kubernetes. Below is an example of the expected output.
+The following endpoints have been implemented according specification:
+  - `/`
+  - `/health`
+  - `/v1/tools/lookup`
+  - `/v1/tools/validate`
+  - `/v1/history`
+### 2.1 Notes regarding endpoints
+Regarding `/` endpoint, it returns the software version deployed, among other things. It gets this info from env var `STAKEFISH_API_VERSION`, which is injected at `Docker` image creation. It also returns if the app is running in `k8s`. To find that out it checks env var `KUBERNETES_SERVICE_HOST`.  
+  
+The `/health` endpoint just return if the connection between the application and the database backend is healthy.
 
-```json
-{
-   "version": "0.1.0",
-   "date": 1663534325,
-   "kubernetes": false
-}
-```
+The following have NOT been implemented due to lack of time:
+  - Swagger retrieval: I would have implemented another endpoint for the user to get this definition so that users could autogenerate client side code. I.e: `/swagger.yaml` and `/swagger.json`.  
+  - `/metrics` endpoint: I would have added another component that could return metrics when queried. Based on [Instumenting a Go application](https://prometheus.io/docs/guides/go-application/).
+  - Improvement of swagger definition: for instance, adding `/health` endpoint to it.  
 
-The `/v1/tools/lookup` endpoint should resolve ONLY the IPv4 addresses for the given domain. Make sure you log all successful queries and their result in a database of your choosing (PostgreSQL, MySQL/MariaDB, MongoDB, Redis, ElasticSearch, SurrealDB, etc.). No SQLite or file-based databases, as we're planning on deploying this service to Kubernetes.
+### 2.2 Software architecture
+The Rest API software has three major packages:
+  - `Controller`: This package handles HTTP incoming requests. It defines the endpoints and how to handle the incoming requests.  
+  This package also contains some unit tests for `/` and `/v1/tools/validate` endpoints. Testing would have needed to be more throrough, but at least it works to ilustrate the `GitHub Actions` testing step.  
+  The main component, `Manager` needs three structs that implement three different interfaces. This is done to avoid having tighly coupled components and allow unit testing. The structs that implement those interfaces are passed in the `Manager` instantiator following the dependency injection paradigm. These interfaces are:
+    - Database connector: Allows the `Manager` to interact with a database backend. Useful for saving/quering information.
+    - Network Infrastructure: Allows the `Manager` to interact with the network, either the actual Internet or a mocked component.
+    - Logger: useful for loggin incomming request when things happen within the `Manager` component.   
 
-For the `/v1/tools/validate` endpoint, the service should validate if the input is an IPv4 address or not.
+  - `Infrastructure`: This package contains the interfaces as well as the implementation that allows the access to the database backend as well as the internet. It also includes the mock objects used for unit testing.
 
-The `/v1/history` endpoint should retrieve the latest 20 saved queries from the database and display them in order (the most recent should be first).
+  - `Debug`: This package contains the interface for logging as well as a simple struct that implements it.
 
-Please ensure the service starts on port 3000 and your REST API has an access log. Uh-oh, don't forget about graceful shutdowns.
+Apart from these three packages, there is the additional one `models` that keeps the structs with the needed tags to return the right json objects to the users upon request and also the tags for modeling the tables for the postgres ORM used.
 
-If possible, please make sure the OpenAPI/Swagger is available so we can generate a client for your service (not mandatory).
+Also the main function have the logic to gracefully close the HTTP server and connection to the database upon user request, either doing `CTRL+C` when running standalonse or shutting down the container gracefully when running on top of docker/k8s.
 
-## Development environment
 
-Create a fully Dockerized development environment using Docker and Docker Compose. Also, ensure all services and tools are included in the Docker Compose definition and that everything starts in the correct order and initializes correctly (migrations, etc.). We should be able to run everything with a simple:
+### 2.3 Database backend
+The database backend chosen for this project is postgresql. It uses the default `postgres` database and creates two tables on it. Tables are:
+  - `query`: each request from users is logged here. The IPv4 resolved are stored in the `address` table.
+  - `address`: all IPv4 from a user request are stored here. Each entry have a foreign key referencing one query.
 
-```
-docker-compose up -d --build
-```
+The relation between `query` and `address` is 1-n, having one `query` many `address`.
+The definition file for this can be found [HERE](db/create_tables.sql).
 
-The Dockerfile and Docker Compose files should be available in the root directory of your project.
+## 3. Docker related work
+The application can be contenerized using Docker. To do so please refer to the [Dockerfile](Dockerfile). To comment it quickly, I've used the Go official image to build the binary and then used a distroless imaged based on debian for the final image. This improves storage use as well as image security.  
+It is important to note that at build time the image building process needs the argument `stakefish_api_version` so it creates the env var `STAKEFISH_API_VERSION` inside the container. This will be the one read to show the application version upon user request.
+  
+The project also comes with a [docker-compose.yml](docker-compose.yaml) file so a development environment can be quicked off very quickly. As reference, the image building argument for this environming will be set to `testing`.
 
-## Tasks for DevOps roles only
-**For candidates applying for our Back-end/full-stack roles, this part is optional.**
+## 4. Helm related work
+To quickly deploy the application on top of a k8s cluster, a helm chart has been developed. It can be found [HERE](helm/stakefish-chart/).  
+Before using it, some k8s secrets need to be put in place. Please refer to the example [secrets.yaml](helm/stakefish-chart/example/secrets.yaml).  
+This chart uses also as dependency the postgres chart created by [Bitnami](https://bitnami.com/stack/postgresql/helm).
 
-### Kubernetes support
+## 5. GitHub Actions related work
+This project implements a CI pipeline built upon `GitHub Actions`. The pipeline is triggered every single time some code is pused to any branch, no matter which one. The only different behavior occurs when in a pull request. In this event, neither the `Docker` container built is pushed to github container registry nor the `Helm` chart is published.  
+The pipeline has three steps (second and third stages depend on their previous steps respectively):
+  - `lint-test-build`: Lints, runs unit tests and builds the Rest API from `Go` project.
+  - `build-push-docker`: Builds and pushes the `Docker` image to GH image repository.
+  - `package-helm-chart`: Packages and publishes the `Helm` chart.
+  
+Steps 2 and 3 creates and publishes artifacts.
 
-We plan on running your application in Kubernetes, so please provide either Kubernetes manifests or a Helm Chart. We prefer Helm Charts. Also, please store sensitive data in Kubernetes secrets (database passwords, etc.)
+Just to add more information about the container image building process, it uses as tags the branch name and the commit sha (short version) in which the pipeline was triggered. This is used as `app_version` when packaging the `Helm` chart so the chart is packaged with the same docker image tag as the docker image published to the repository.  
 
-### CI Pipeline
+## 6. Additional work
+I created a `Helm` repository using `Github Pages` on `https://mikeletux.github.io/helm-chart/`. In order to do that I needed to use the `GitHub Action` [stefanprodan/helm-gh-page](https://github.com/stefanprodan/helm-gh-pages) and followed his [tutorial](https://helm.sh/docs/howto/chart_releaser_action/). In order for this repo to perform changes on that one, I created one granular token allowing to modify `https://github.com/mikeletux/helm-chart` repo and used it from this repo pipeline as a `Github Secret`.   
+  
+The project also comes with a `k8s` [YAML](stakefish-k8s.yaml) file that could be used to deploy the needed resources on top of a `k8s` cluster without `Helm`.
 
-Add a CI pipeline (GitHub Actions, GitLab CI, etc.) to test (basic tests, linting, etc.), build (Docker only), and package (Helm chart) your application upon each commit. The artifact of your build should be at least a versioned Docker image.
-
-## References
-- https://12factor.net/
-- https://swagger.io/
-- https://docs.docker.com/compose/
-- https://minikube.sigs.k8s.io/docs/
-- https://helm.sh/
-
----
-
-**Notes:**
-
-- We appreciate simple, clean, idiomatic code and essential documentation.
-- Any improvements on the Swagger/OpenAPI definitions are welcome.
-- Pay attention to details.
+/Miguel Sama 2023

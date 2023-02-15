@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: {{.Values.application.name}}
+  name: {{.Values.application.name}}
+spec:
+  replicas: {{.Values.replicaCount}}
+  selector:
+    matchLabels:
+      app: {{.Values.application.name}}
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: {{.Values.application.name}}
+    spec:
+      containers:
+      - image: "{{ .Values.image.repository }}:{{ .Chart.AppVersion }}"
+        name: api
+        imagePullPolicy: {{.Values.image.pullPolicy}}
+        resources: {}
+        ports:
+          - containerPort: {{ .Values.containerPort }}
+        env:
+        - name: FISH_PG_HOST
+          value: "{{ .Release.Name}}-postgresql:{{ .Values.postgresql.global.postgresql.service.ports.postgresql }}"
+        - name: FISH_PG_API_ADDR
+          value: "0.0.0.0:{{ .Values.loadBalancerPort }}"
+        - name: FISH_PG_DATABASE
+          value: {{ .Values.postgresql.global.postgresql.auth.database }}
+        - name: FISH_PG_USER
+          valueFrom:
+            secretKeyRef:
+              name: stakefish-api-secret
+              key: fish-pg-user
+        - name: FISH_PG_PASS
+          valueFrom:
+            secretKeyRef:
+              name: stakefish-api-secret
+              key: postgres-password
+        
+status: {}

@@ -1,0 +1,94 @@
+name: Go package
+
+on: [push]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  lint-test-build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    env:
+      CGO_ENABLED: 0
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.19
+
+      - name: Lint with go-vet
+        run: make lint
+
+      - name: Test
+        run: make test
+
+      - name: Build go binary
+        run: make build
+
+  build-push-docker:
+    needs: lint-test-build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v2.1.0
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v4.3.0
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=sha
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v4.0.0
+        with:
+          context: .
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: stakefish_api_version=${{ github.sha }}
+
+  package-helm-chart:
+    needs: build-push-docker
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - uses: benjlevesque/short-sha@v2.1
+      id: short-sha
+    
+    - name: Publish Helm charts
+      uses: stefanprodan/helm-gh-pages@v1.7.0
+      with:
+        token: ${{ secrets.TOKEN_HELM_REPO }}
+        charts_dir: helm
+        charts_url: https://mikeletux.github.io/helm-chart
+        owner: mikeletux
+        repository: helm-chart
+        branch: gh_pages
+        app_version: sha-${{ steps.short-sha.outputs.sha }}
+      if: github.event_name != 'pull_request'
