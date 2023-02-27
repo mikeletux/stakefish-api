@@ -57,7 +57,7 @@ func (p *PostgresConnector) SaveQuery(query models.Query) error {
 
 // RetrieveLastTwentyQueries returns the last 20 queries stored in the database in a descendent manner.
 func (p *PostgresConnector) RetrieveLastTwentyQueries() ([]models.Query, error) {
-	var queries []models.Query
+	queries := make([]models.Query, 0, 20)
 	err := p.db.Model(&queries).
 		Relation("Addresses").
 		Order("created_at DESC").

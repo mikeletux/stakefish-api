@@ -5,8 +5,9 @@ services:
     restart: always
     container_name: stakefish-db
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: stakefish-user
+      POSTGRES_PASSWORD: stakefish-password
+      POSTGRES_DB: stakefish
     ports:
       - '5432:5432'
     volumes: 
@@ -25,9 +26,9 @@ services:
       - '3000:3000'
     environment:
       FISH_PG_HOST: stakefish-db:5432
-      FISH_PG_USER: postgres
-      FISH_PG_PASS: postgres
-      FISH_PG_DATABASE: postgres
+      FISH_PG_USER: stakefish-user
+      FISH_PG_PASS: stakefish-password
+      FISH_PG_DATABASE: stakefish
       FISH_PG_API_ADDR: 0.0.0.0:3000
     links:
       - stakefish-db

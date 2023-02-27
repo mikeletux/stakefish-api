@@ -16,13 +16,6 @@ loadBalancerPort: 3000
 postgresql:
   auth:
     existingSecret: stakefish-api-secret
-  global:
-    postgresql:
-      auth:
-        database: "postgres"
-      service:
-        ports:
-          postgresql: "5432"
   primary:
     initdb:
       scripts:
@@ -40,3 +33,12 @@ postgresql:
             FOREIGN KEY (query_id)
             REFERENCES query (id)
             );
+
+global:
+  postgresql:
+    auth:
+      username: "stakefish-user"
+      database: "stakefish"
+    service:
+      ports:
+        postgresql: "5432"
