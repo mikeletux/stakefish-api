@@ -66,9 +66,23 @@ It is important to note that at build time the image building process needs the 
 The project also comes with a [docker-compose.yml](docker-compose.yaml) file so a development environment can be quicked off very quickly. As reference, the image building argument for this environming will be set to `testing`.
 
 ## 4. Helm related work
-To quickly deploy the application on top of a k8s cluster, a helm chart has been developed. It can be found [HERE](helm/stakefish-chart/).  
-Before using it, some k8s secrets need to be put in place. Please refer to the example [secrets.yaml](helm/stakefish-chart/example/secrets.yaml).  
-This chart uses also as dependency the postgres chart created by [Bitnami](https://bitnami.com/stack/postgresql/helm).
+To quickly deploy the application on top of a `k8s` cluster, a `Helm` chart has been developed. To install the application using `Helm`, please add the right `Helm` reposotory and install it from there.  
+**⚠️Before using it⚠️**, some `k8s` secrets need to be put in place. Please refer to the example [secrets.yaml](helm/stakefish-chart/example/secrets.yaml). If these secrets are not set before installing the chart, the pods won't come up. This behaviour could be improved in the future by auto-generating secrets if they are not present.  
+This chart uses also as dependency the postgres chart created by [Bitnami](https://bitnami.com/stack/postgresql/helm).  
+To install the chart, follow the steps below:
+Add my `Helm` repo to your `Helm` installation:
+```
+$ helm repo add stakefish https://mikeletux.github.io/helm-chart/
+```
+Update your `Helm` repos:
+```
+$ helm repo update
+```
+Proceed to install the chart:
+```
+$ helm search repo stakefish
+$ helm install stakefish stakefish/stakefish-chart
+```
 
 ## 5. GitHub Actions related work
 This project implements a CI pipeline built upon `GitHub Actions`. The pipeline is triggered every single time some code is pused to any branch, no matter which one. The only different behavior occurs when in a pull request. In this event, neither the `Docker` container built is pushed to github container registry nor the `Helm` chart is published.  
